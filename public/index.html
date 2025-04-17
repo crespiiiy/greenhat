@@ -464,12 +464,14 @@
         .blurred-link {
             filter: blur(4px);
             pointer-events: none;
+            user-select: none; /* Prevent text selection */
             transition: filter 0.3s ease;
         }
 
         .blurred-link.active {
             filter: none;
             pointer-events: auto;
+            user-select: auto; /* Allow text selection when active */
         }
 
         @keyframes slideIn {
@@ -756,8 +758,8 @@
                             </div>
                             <div class="col-md-12 form-group">
                                 <label class="form-label">رابط تحميل الخدمة</label>
-                                <input type="text" class="form-control blurred-link" id="download-link" readonly value="">
-                                <span class="tooltip-text">رابط تحميل الخدمة سيتم تفعيله تلقائيا بعد تأكيد الدفع</span>
+                                <input type="text" class="form-control blurred-link" id="download-link" readonly value="" oncopy="return !this.classList.contains('blurred-link');">
+                                <span class="tooltip-text">رابط تحميل الخدمة سيكون متاحًا بعد تأكيد الدفع</span>
                                 <i class="fas fa-download"></i>
                             </div>
                             <div class="col-md-12 form-group">
@@ -1001,7 +1003,20 @@
                 tooltipTelegram: "أدخل حسابك على تيليجرام (مثل @username) للتواصل مع فريق الدعم",
                 tooltipStatus: "الحالة الحالية لطلبك",
                 tooltipDownloadLink: "رابط تحميل الخدمة سيكون متاحًا بعد تأكيد الدفع",
-                unexpectedError: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+                unexpectedError: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+                visitorCount: "عدد الزوار",
+                showStats: "عرض الإحصائيات",
+                visitorStats: "إحصائيات الزوار",
+                confirmationTitle: "تأكيد الطلب",
+                confirmationSent: "تم إرسال تأكيد الطلب إلى بريدك الإلكتروني.",
+                confirmationService: "الخدمة",
+                confirmationAmount: "المبلغ",
+                confirmationTelegram: "حساب تيليجرام",
+                confirmationDownload: "تحميل الخدمة",
+                chatHeader: "الدعم المباشر",
+                chatBody: "مرحبًا! كيف يمكننا مساعدتك؟",
+                chatPlaceholder: "اكتب رسالتك...",
+                notification: "إشعار"
             },
             en: {
                 title: "Green Hat Platform",
@@ -1042,7 +1057,20 @@
                 tooltipTelegram: "Enter your Telegram account (e.g., @username) for communication with the support team",
                 tooltipStatus: "Current status of your request",
                 tooltipDownloadLink: "Download link for the service will be available after payment confirmation",
-                unexpectedError: "An unexpected error occurred. Please try again."
+                unexpectedError: "An unexpected error occurred. Please try again.",
+                visitorCount: "Visitor Count",
+                showStats: "Show Statistics",
+                visitorStats: "Visitor Statistics",
+                confirmationTitle: "Order Confirmation",
+                confirmationSent: "Order confirmation has been sent to your email.",
+                confirmationService: "Service",
+                confirmationAmount: "Amount",
+                confirmationTelegram: "Telegram Account",
+                confirmationDownload: "Download Service",
+                chatHeader: "Live Support",
+                chatBody: "Hello! How can we assist you?",
+                chatPlaceholder: "Type your message...",
+                notification: "Notification"
             }
         };
 
@@ -1052,7 +1080,7 @@
             "شراء رقم دائم": "توفير أرقام هواتف دائمة للاستخدام في التسجيل على المنصات.", // Placeholder
             "سحب حساب": "خدمة لاستعادة أو سحب حسابات على منصات مختلفة.", // Placeholder
             "اسكريبت قفل حساب واتس": "سكريبت لقفل حسابات واتساب بشكل مؤقت أو دائم.", // Placeholder
-            " تطبيق اختراق الهاتف": " تطبيق يتيح اختراق الهواتف للتحكم الكامل في الجهاز والوصول  .", // Placeholder
+            "تطبيق اختراق الهاتف": "تطبيق يتيح اختراق الهواتف للتحكم الكامل في الجهاز والوصول.", // Placeholder
             "اسكريبت تلغيم": "سكريبت لإنشاء برمجيات خبيثة تُستخدم في الهجمات السيبرانية.", // Placeholder
             "استرجاع حساب او رقم": "خدمة لاستعادة حسابات أو أرقام تم فقدانها.", // Placeholder
             "Facebook fishing.py": "أداة بايثون تصيد لسحب حسابات فيسبوك.",
@@ -1131,7 +1159,7 @@
 
             priceInput.value = price ? `$${price.toFixed(2)}` : '';
             feeInput.value = price ? `$${calculateFee(price).toFixed(2)}` : '';
-            statusSpan.textContent = price ? 'متوفر' : '';
+            statusSpan.textContent = price ? translations[currentLang].available || 'متوفر' : '';
             descriptionDiv.textContent = serviceDescriptions[selectedService] || '';
             descriptionDiv.classList.toggle('active', !!selectedService && serviceDescriptions[selectedService]);
             updateAmount();
@@ -1165,7 +1193,7 @@
                 return;
             }
 
-            accountNumberInput.value = config.accountNumbers[paymentMethod] || 'غير متوفر';
+            accountNumberInput.value = config.accountNumbers[paymentMethod] || translations[currentLang].notAvailable || 'غير متوفر';
             downloadLinkInput.value = `http://pjalfvojivvoiz3e3qoimbz54q56zhhumk7bd5yxw7hn5qcsswxr2zqd.onion`; // Placeholder link
             downloadLinkInput.classList.add('blurred-link');
             document.getElementById('step1').style.display = 'none';
@@ -1249,14 +1277,14 @@
             const botToken = config.telegramBotToken;
             const chatId = config.telegramChatId;
             const text = `
-📋 *طلب جديد*
-🛠 *الخدمة*: ${service}
-💳 *طريقة الدفع*: ${paymentMethod}
-💰 *المبلغ*: ${amount}
-📱 *حساب تيليجرام*: ${telegramAccount}
-🏦 *رقم الحساب*: ${accountNumber}
-🔗 *رابط التحميل*: ${downloadLink}
-📅 *التاريخ*: ${new Date().toLocaleString()}
+📋 *${translations[currentLang].newOrder || 'طلب جديد'}*
+🛠 *${translations[currentLang].confirmationService}:* ${service}
+💳 *${translations[currentLang].selectPayment}:* ${paymentMethod}
+💰 *${translations[currentLang].confirmationAmount}:* ${amount}
+📱 *${translations[currentLang].confirmationTelegram}:* ${telegramAccount}
+🏦 *${translations[currentLang].accountNumber}:* ${accountNumber}
+🔗 *${translations[currentLang].confirmationDownload}:* ${downloadLink}
+📅 *${translations[currentLang].date || 'التاريخ'}:* ${new Date().toLocaleString()}
             `.trim();
 
             const formData = new FormData();
@@ -1357,7 +1385,7 @@
                 document.getElementById('modal-amount').textContent = amount;
                 document.getElementById('modal-telegram').textContent = telegramAccount;
                 document.getElementById('modal-download-link').href = downloadLink;
-                document.getElementById('modal-download-link').textContent = translations[currentLang].downloadLink;
+                document.getElementById('modal-download-link').textContent = translations[currentLang].confirmationDownload;
                 modal.show();
 
                 // Simulate order processing (10 minutes)
@@ -1388,10 +1416,15 @@
 
         // Update UI based on selected language
         function updateLanguage() {
+            // Landing page
             document.querySelector('#landing-page h1').textContent = translations[currentLang].welcomeTitle;
             document.querySelector('#landing-page p').textContent = translations[currentLang].welcomeText;
             document.querySelector('#landing-page .btn-custom').textContent = translations[currentLang].join;
+
+            // Header
             document.querySelector('.logo-text').textContent = translations[currentLang].title;
+
+            // Client info section
             document.querySelectorAll('.section-title')[0].textContent = translations[currentLang].clientInfo;
             document.querySelectorAll('.form-label')[0].textContent = translations[currentLang].selectService;
             document.querySelectorAll('.form-label')[1].textContent = translations[currentLang].servicePrice;
@@ -1402,15 +1435,21 @@
             document.querySelector('.alert-info').textContent = translations[currentLang].paymentDetails;
             document.querySelectorAll('.form-label')[5].textContent = translations[currentLang].accountNumber;
             document.querySelectorAll('.form-label')[6].textContent = translations[currentLang].uploadProof;
-            document.querySelectorAll('.form-label')[7].textContent = translations[currentLang].downloadLink;
+            document.querySelectorAll('.form-label')[7].textContent = translations[currentLang].tooltipDownloadLink;
             document.querySelectorAll('.form-label')[8].textContent = translations[currentLang].telegramAccount;
             document.querySelectorAll('.form-label')[9].textContent = translations[currentLang].orderStatus;
             document.querySelector('#confirm-payment').textContent = translations[currentLang].confirmPayment;
+
+            // Transactions and popular services
             document.querySelectorAll('.section-title')[1].textContent = translations[currentLang].transactions;
             document.querySelectorAll('.section-title')[2].textContent = translations[currentLang].popularServices;
+
+            // Error page
             document.querySelector('#error-page h2').textContent = translations[currentLang].error;
             document.querySelector('#error-page p').textContent = translations[currentLang].errorMessage;
             document.querySelector('#error-page .btn-custom').textContent = translations[currentLang].retry;
+
+            // Tooltips
             document.querySelectorAll('.tooltip-text')[0].textContent = translations[currentLang].tooltipService;
             document.querySelectorAll('.tooltip-text')[1].textContent = translations[currentLang].tooltipPrice;
             document.querySelectorAll('.tooltip-text')[2].textContent = translations[currentLang].tooltipFee;
@@ -1427,126 +1466,170 @@
 
             // Update table headers
             const tableHeaders = document.querySelectorAll('#transaction-table th');
-            tableHeaders[0].textContent = currentLang === 'ar' ? 'العميل' : 'Client';
-            tableHeaders[1].textContent = currentLang === 'ar' ? 'الخدمة' : 'Service';
-            tableHeaders[2].textContent = currentLang === 'ar' ? 'المبلغ' : 'Amount';
-            tableHeaders[3].textContent = currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method';
-            tableHeaders[4].textContent = currentLang === 'ar' ? 'رقم العملية' : 'Transaction ID';
-            tableHeaders[5].textContent = currentLang === 'ar' ? 'التاريخ' : 'Date';
-        }
+            tableHeaders[0].textContent = translations[currentLang].client || 'العميل';
+            tableHeaders[1].textContent = translations[currentLang].confirmationService || 'الخدمة';
+            tableHeaders[2].textContent = translations[currentLang].confirmationAmount || 'المبلغ';
+            tableHeaders[3].textContent = translations[currentLang].selectPayment || 'طريقة الدفع';
+            tableHeaders[4].textContent = translations[currentLang].transactionId || 'رقم العملية';
+            tableHeaders[5].textContent = translations[currentLang].date || 'التاريخ';
 
-        // Initialize visitor stats chart
-        function initVisitorChart() {
-            const ctx = document.getElementById('visitorChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
-                    datasets: [{
-                        label: translations[currentLang].visitorStats || 'Visitors',
-                        data: [12000, 19000, 15000, 25000, 22000, 30000],
-                        borderColor: 'rgba(0, 255, 153, 1)',
-                        backgroundColor: 'rgba(0, 255, 153, 0.2)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: '#ffffff' }
-                        },
-                        x: {
-                            ticks: { color: '#ffffff' }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: { color: '#ffffff' }
-                        }
-                    }
-                }
-            });
-        }
+            // Update visitor counter
+            document.querySelector('.visitor-counter h3').textContent = translations[currentLang].visitorCount;
+            document.querySelector('.visitor-counter .btn-custom').textContent = translations[currentLang].showStats;
 
-        // Toggle visitor stats visibility
-        function toggleVisitorStats() {
-            const visitorStats = document.getElementById('visitor-stats');
-            visitorStats.classList.toggle('active');
-            if (visitorStats.classList.contains('active') && !window.visitorChartInitialized) {
-                initVisitorChart();
-                window.visitorChartInitialized = true;
-            }
-        }
+            // Update confirmation modal
+            document.querySelector('#confirmationModal .modal-title').textContent = translations[currentLang].confirmationTitle;
+            document.querySelector('#confirmationModal .modal-body p:nth-child(1)').textContent = translations[currentLang].confirmationSent;
+            document.querySelector('#confirmationModal .modal-body p:nth-child(2)').textContent = `${translations[currentLang].confirmationService}: `;
+            document.querySelector('#confirmationModal .modal-body p:nth-child(3)').textContent = `${translations[currentLang].confirmationAmount}: `;
+            document.querySelector('#confirmationModal .modal-body p:nth-child(4)').textContent = `${translations[currentLang].confirmationTelegram}: `;
+            document.querySelector('#confirmationModal .modal-body p:nth-child(5)').textContent = `${translations[currentLang].confirmationDownload}: `;
 
-        // Open chat window
-        function openChat() {
-            const chatWindow = document.getElementById('chat-window');
-            chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
-        }
+            // Update chat window
+            document.querySelector('.chat-header').textContent = translations[currentLang].chatHeader;
+document.querySelector('.chat-body').textContent = translations[currentLang].chatBody;
+document.querySelector('.chat-input').placeholder = translations[currentLang].chatPlaceholder;
 
-        // Lazy load images
-        function lazyLoadImages() {
-            const images = document.querySelectorAll('img[data-src]');
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        observer.unobserve(img);
-                    }
-                });
-            });
-            images.forEach(img => observer.observe(img));
-        }
+// Update toast notification
+document.querySelector('.toast-header .me-auto').textContent = translations[currentLang].notification;
 
-        // Update visitor count (simulated)
-        function updateVisitorCount() {
-            const visitorCountSpan = document.getElementById('visitor-count');
-            let currentCount = parseInt(visitorCountSpan.textContent.replace(/,/g, '')) || 63247;
+// Update visitor stats title
+if (document.querySelector('.visitor-stats h3')) {
+document.querySelector('.visitor-stats h3').textContent = translations[currentLang].visitorStats;
+}
 
-            // Function to increment count randomly
-            const incrementCount = () => {
-                const increment = Math.floor(Math.random() * 4) + 1; // Random number between 1 and 4
-                currentCount += increment;
-                visitorCountSpan.textContent = currentCount.toLocaleString(); // Format with commas
-            };
+// Update service options
+const serviceSelect = document.getElementById('service');
+const originalValue = serviceSelect.value;
+const serviceOptions = [
+{ value: "", text: translations[currentLang].selectService },
+{ value: "5", text: currentLang === 'ar' ? "زياده متابعين" : "Increase Followers" },
+{ value: "5", text: currentLang === 'ar' ? "شراء رقم دائم" : "Buy Permanent Number" },
+{ value: "15", text: currentLang === 'ar' ? "سحب حساب" : "Account Retrieval" },
+{ value: "10", text: currentLang === 'ar' ? "اسكريبت قفل حساب واتس" : "WhatsApp Account Lock Script" },
+{ value: "10", text: currentLang === 'ar' ? "تطبيق اختراق الهاتف" : "Phone Hacking App" },
+{ value: "20", text: currentLang === 'ar' ? "اسكريبت تلغيم" : "Malware Script" },
+{ value: "10", text: currentLang === 'ar' ? "استرجاع حساب او رقم" : "Account or Number Recovery" },
+{ value: "10", text: "Facebook fishing.py" },
+{ value: "10", text: "Twitter fishing.py" },
+{ value: "10", text: "Instagram fishing.py" },
+{ value: "10", text: "WhatsApp fishing.py" },
+{ value: "10", text: "Telegram fishing.py" },
+{ value: "10", text: "Snapchat fishing.py" },
+{ value: "10", text: "VK fishing.py" },
+{ value: "10", text: "PUBG fishing.py" },
+{ value: "10", text: "TikTok fishing.py" },
+{ value: "10", text: "CVE-2022-24086" },
+{ value: "15", text: "CVE-2023-42793" },
+{ value: "15", text: "CVE-2023-34362" },
+{ value: "20", text: "CVE-2023-3519" },
+{ value: "20", text: "CVE-2023-27350" },
+{ value: "20", text: "CVE-2023-38831" },
+{ value: "20", text: "CVE-2023-36802" },
+{ value: "20", text: "CVE-2023-28252" },
+{ value: "20", text: "CVE-2023-24489" },
+{ value: "20", text: "CVE-2023-0669" },
+{ value: "20", text: "CVE-2023-4966" },
+{ value: "12", text: currentLang === 'ar' ? "تسريب بيانات X (2023)" : "X Data Leak (2023)" },
+{ value: "20", text: currentLang === 'ar' ? "تسريب بيانات Yahoo" : "Yahoo Data Leak" },
+{ value: "10", text: "Rockyou 2024" },
+{ value: "10", text: "Patator.py" },
+{ value: "10", text: "Responder" },
+{ value: "10", text: "Wasky.py" },
+{ value: "15", text: "Hantsploit3.py" },
+{ value: "10", text: "Slowdown.py" },
+{ value: "10", text: "Togy.py (Low Orbit Ion Cannon)" },
+{ value: "15", text: "Astaroth.py" },
+{ value: "10", text: "Recon-T.py" }
+];
 
-            // Initial increment
-            incrementCount();
+serviceSelect.innerHTML = '';
+serviceOptions.forEach(option => {
+const opt = document.createElement('option');
+opt.value = option.value;
+opt.textContent = option.text;
+if (option.value === originalValue) {
+opt.selected = true;
+}
+serviceSelect.appendChild(opt);
+});
 
-            // Schedule random increments between 1 and 30 seconds
-            const scheduleNextIncrement = () => {
-                const randomInterval = (Math.random() * 29 + 1) * 1000; // 1 to 30 seconds in milliseconds
-                setTimeout(() => {
-                    incrementCount();
-                    scheduleNextIncrement(); // Schedule the next increment
-                }, randomInterval);
-            };
+updatePrice(); // Refresh price and description
+}
 
-            scheduleNextIncrement();
-        }
+// Open chat window
+function openChat() {
+const chatWindow = document.getElementById('chat-window');
+chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
+}
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeForm(); // Ensure form fields are empty on load
-            updateLanguage(); // Apply language translations
-            lazyLoadImages(); // Lazy load images
-            updateVisitorCount(); // Start visitor counter
-            // Load preferences only if explicitly applied (e.g., via user action)
-        });
+// Visitor counter
+let visitorCount = 63247;
+function updateVisitorCount() {
+visitorCount += Math.floor(Math.random() * 4) + 1;
+document.getElementById('visitor-count').textContent = visitorCount.toLocaleString();
+}
+setInterval(updateVisitorCount, Math.random() * 29000 + 1000);
 
-        // Error handling for unexpected issues
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
-            console.error('Error:', msg, 'URL:', url, 'Line:', lineNo, 'Column:', columnNo, 'Stack:', error);
-            showToast(translations[currentLang].unexpectedError, 'error');
-            document.getElementById('main-panel').style.display = 'none';
-            document.getElementById('error-page').style.display = 'block';
-        };
-    </script>
+// Visitor stats chart
+function toggleVisitorStats() {
+const visitorStats = document.getElementById('visitor-stats');
+visitorStats.classList.toggle('active');
+if (visitorStats.classList.contains('active')) {
+initializeChart();
+}
+}
+
+function initializeChart() {
+const ctx = document.getElementById('visitorChart').getContext('2d');
+new Chart(ctx, {
+type: 'line',
+data: {
+labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+datasets: [{
+label: translations[currentLang].visitorStats || 'Visitor Statistics',
+data: [5000, 10000, 15000, 20000, 30000, 63247],
+borderColor: '#00ff99',
+backgroundColor: 'rgba(0, 255, 153, 0.2)',
+fill: true,
+tension: 0.4
+}]
+},
+options: {
+responsive: true,
+scales: {
+y: {
+beginAtZero: true,
+ticks: { color: '#ffffff' },
+grid: { color: 'rgba(255, 255, 255, 0.1)' }
+},
+x: {
+ticks: { color: '#ffffff' },
+grid: { color: 'rgba(255, 255, 255, 0.1)' }
+}
+},
+plugins: {
+legend: {
+labels: { color: '#ffffff' }
+}
+}
+}
+});
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', () => {
+    initializeForm();
+    updateLanguage();
+    // loadPreferences() is not called here to keep form fields empty on load
+});
+
+// Debugging: Log language changes
+document.getElementById('language').addEventListener('change', () => {
+    console.log(`Language switched to: ${currentLang}`);
+});
+</script>
+
 </body>
 </html>
 </xaiArtifact>
