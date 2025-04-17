@@ -1,23 +1,18 @@
 <script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function loadFileData(filename) {
+    var gk_isXlsx = false;
+    var gk_xlsxFileLookup = {};
+    var gk_fileData = {};
+    function loadFileData(filename) {
         if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
             try {
                 var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
                 var firstSheetName = workbook.SheetNames[0];
                 var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
                 var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
                 var filteredData = jsonData.filter(row =>
                     row.some(cell => cell !== '' && cell !== null && cell !== undefined)
                 );
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData); // Create a new sheet from filtered array of arrays
+                var csv = XLSX.utils.aoa_to_sheet(filteredData);
                 csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
                 return csv;
             } catch (e) {
@@ -26,8 +21,9 @@
             }
         }
         return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+    }
+</script>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -447,6 +443,35 @@
             display: block;
         }
 
+        /* New Styles for Service Description Box */
+        .service-description {
+            display: none;
+            background: var(--input-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .service-description.active {
+            display: block;
+        }
+
+        /* Styles for Blurred Download Link */
+        .blurred-link {
+            filter: blur(4px);
+            pointer-events: none;
+            transition: filter 0.3s ease;
+        }
+
+        .blurred-link.active {
+            filter: none;
+            pointer-events: auto;
+        }
+
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(50px); }
             to { opacity: 1; transform: translateY(0); }
@@ -625,18 +650,49 @@
                                 <label class="form-label">اختر الخدمة</label>
                                 <select class="form-select" id="service" onchange="updatePrice()">
                                     <option value="" selected>اختر الخدمة</option>
-                                    <option value="12" data-status="available"> زياده متابعين</option>
-                                    <option value="5" data-status="available"> شراء رقم دائم</option>
-                                    <option value="15" data-status="available"> سحب حساب</option>
-                                    <option value="5" data-status="available"> قفل حساب واتس</option>
-                                    <option value="10" data-status="available"> تطبيق اختراق الهاتف</option>
-                                    <option value="20" data-status="available"> اسكريبت تجميع نجوم من بوتات</option>
-                                    <option value="10" data-status="available"> استرجاع حساب او رقم</option>
-                                    <option value="10" data-status="available"> ادوات صيد مد اثر مدفوعه</option>
+                                    <option value="12" data-status="available">زياده متابعين</option>
+                                    <option value="5" data-status="available">شراء رقم دائم</option>
+                                    <option value="15" data-status="available">سحب حساب</option>
+                                    <option value="5" data-status="available">اسكريبت قفل حساب واتس</option>
+                                    <option value="10" data-status="available">تطبيق اختراق الهاتف</option>
+                                    <option value="20" data-status="available">اسكريبت تلغيم</option>
+                                    <option value="10" data-status="available">استرجاع حساب او رقم</option>
+                                    <option value="10" data-status="available">Facebook fishing.py</option>
+                                    <option value="10" data-status="available">Twitter fishing.py</option>
+                                    <option value="10" data-status="available">Instagram fishing.py</option>
+                                    <option value="10" data-status="available">WhatsApp fishing.py</option>
+                                    <option value="10" data-status="available">Telegram fishing.py</option>
+                                    <option value="10" data-status="available">Snapchat fishing.py</option>
+                                    <option value="10" data-status="available">VK fishing.py</option>
+                                    <option value="10" data-status="available">PUBG fishing.py</option>
+                                    <option value="10" data-status="available">TikTok fishing.py</option>
+                                    <option value="15" data-status="available">CVE-2022-24086</option>
+                                    <option value="15" data-status="available">CVE-2023-42793</option>
+                                    <option value="15" data-status="available">CVE-2023-34362</option>
+                                    <option value="15" data-status="available">CVE-2023-3519</option>
+                                    <option value="15" data-status="available">CVE-2023-27350</option>
+                                    <option value="15" data-status="available">CVE-2023-38831</option>
+                                    <option value="15" data-status="available">CVE-2023-36802</option>
+                                    <option value="15" data-status="available">CVE-2023-28252</option>
+                                    <option value="15" data-status="available">CVE-2023-24489</option>
+                                    <option value="15" data-status="available">CVE-2023-0669</option>
+                                    <option value="15" data-status="available">CVE-2023-4966</option>
+                                    <option value="20" data-status="available">تسريب بيانات X (2023)</option>
+                                    <option value="20" data-status="available">تسريب بيانات Yahoo</option>
+                                    <option value="20" data-status="available">Rockyou 2024</option>
+                                    <option value="10" data-status="available">Patator.py</option>
+                                    <option value="10" data-status="available">Responder</option>
+                                    <option value="10" data-status="available">Wasky.py</option>
+                                    <option value="15" data-status="available">Hantsploit3.py</option>
+                                    <option value="10" data-status="available">Slowdown.py</option>
+                                    <option value="10" data-status="available">Togy.py (Low Orbit Ion Cannon)</option>
+                                    <option value="15" data-status="available">Astaroth.py</option>
+                                    <option value="10" data-status="available">Recon-T.py</option>
                                 </select>
                                 <span class="tooltip-text">حدد الخدمة التي ترغب في طلبها من القائمة</span>
                                 <span id="service-status" class="service-status"></span>
                                 <i class="fas fa-cog"></i>
+                                <div id="service-description" class="service-description"></div>
                             </div>
                             <div class="col-md-6 form-group">
                                 <label class="form-label">سعر الخدمة (USD)</label>
@@ -694,9 +750,15 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <label class="form-label">رفع إثبات الدفع (سكرين شوت)</label>
-                                <input type="file" class="form-control" id="screenshot" accept="image/*">
+                                <input type="file" class="form-control" id="screenshot" accept="image/*" required>
                                 <span class="tooltip-text">ارفع صورة إثبات الدفع لتأكيد العملية</span>
                                 <i class="fas fa-upload"></i>
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <label class="form-label">رابط تحميل الخدمة</label>
+                                <input type="text" class="form-control blurred-link" id="download-link" readonly value="">
+                                <span class="tooltip-text">رابط تحميل الخدمة سيكون متاحًا بعد تأكيد الدفع</span>
+                                <i class="fas fa-download"></i>
                             </div>
                             <div class="col-md-12 form-group" id="captcha-group" style="display: none;">
                                 <label class="form-label">التحقق: كم يساوي <span id="captcha-question"></span>؟</label>
@@ -746,7 +808,7 @@
                         <tbody id="transaction-table">
                             <tr>
                                 <td>ياسر عبدالله</td>
-                                <td>ادوات صيد مدفوعه</td>
+                                <td>Facebook fishing.py</td>
                                 <td>$10</td>
                                 <td>Payeer - USD <i class="fas fa-wallet currency-icon"></i></td>
                                 <td>123456781</td>
@@ -769,7 +831,9 @@
                                 <td>2025-04-12</td>
                             </tr>
                             <tr>
-                                <td>خالد محمد</td>
+                                <td>خ
+
+الد محمد</td>
                                 <td>تطبيق اختراق الهاتف</td>
                                 <td>$10</td>
                                 <td>Payeer - USD <i class="fas fa-wallet currency-icon"></i></td>
@@ -786,7 +850,7 @@
                             </tr>
                             <tr>
                                 <td>Youssef Hassan</td>
-                                <td>ادوات صيد مدفوعه</td>
+                                <td>Facebook fishing.py</td>
                                 <td>$10</td>
                                 <td>stc pay <i class="fas fa-credit-card currency-icon"></i></td>
                                 <td>9871236540</td>
@@ -810,7 +874,7 @@
                             </tr>
                             <tr>
                                 <td>momo so</td>
-                                <td>ادوات صيد مدفوعه</td>
+                                <td>Facebook fishing.py</td>
                                 <td>$10</td>
                                 <td>Payeer - USD <i class="fas fa-wallet currency-icon"></i></td>
                                 <td>123456782</td>
@@ -843,7 +907,7 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">تطبيق اختراق الهاتف: 150 طلبًا</li>
                     <li class="list-group-item">شراء رقم دائم: 120 طلبًا</li>
-                    <li class="list-group-item">ادوات صيد مدفوعه: 90 طلبًا</li>
+                    <li class="list-group-item">Facebook fishing.py: 90 طلبًا</li>
                 </ul>
             </div>
 
@@ -881,6 +945,7 @@
                         <p>الخدمة: <span id="modal-service"></span></p>
                         <p>المبلغ: <span id="modal-amount"></span></p>
                         <p>حساب تيليجرام: <span id="modal-telegram"></span></p>
+                        <p>رابط التحميل: <a id="modal-download-link" href="#" target="_blank">تحميل الخدمة</a></p>
                     </div>
                 </div>
             </div>
@@ -952,6 +1017,7 @@
                 tooltipCaptcha: "أجب على السؤال للتحقق من أنك لست روبوتًا",
                 tooltipTelegram: "أدخل حسابك على تيليجرام (مثل @username) للتواصل مع فريق الدعم",
                 tooltipStatus: "الحالة الحالية لطلبك",
+                tooltipDownloadLink: "رابط تحميل الخدمة سيكون متاحًا بعد تأكيد الدفع",
                 unexpectedError: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
             },
             en: {
@@ -994,8 +1060,51 @@
                 tooltipCaptcha: "Answer the question to verify you're not a robot",
                 tooltipTelegram: "Enter your Telegram account (e.g., @username) for communication with the support team",
                 tooltipStatus: "Current status of your request",
+                tooltipDownloadLink: "Download link for the service will be available after payment confirmation",
                 unexpectedError: "An unexpected error occurred. Please try again."
             }
+        };
+
+        // Service descriptions
+        const serviceDescriptions = {
+            "زياده متابعين": "خدمة لزيادة عدد المتابعين على منصات التواصل الاجتماعي.", // Placeholder
+            "شراء رقم دائم": "توفير أرقام هواتف دائمة للاستخدام في التسجيل على المنصات.", // Placeholder
+            "سحب حساب": "خدمة لاستعادة أو سحب حسابات على منصات مختلفة.", // Placeholder
+            "اسكريبت قفل حساب واتس": "سكريبت لقفل حسابات واتساب بشكل مؤقت أو دائم.", // Placeholder
+            "تطبيق اختراق الهاتف": "تطبيق يتيح اختراق الهواتف للوصول إلى البيانات.", // Placeholder
+            "اسكريبت تلغيم": "سكريبت لإنشاء برمجيات خبيثة تُستخدم في الهجمات السيبرانية.", // Placeholder
+            "استرجاع حساب او رقم": "خدمة لاستعادة حسابات أو أرقام تم فقدانها.", // Placeholder
+            "Facebook fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على فيسبوك.",
+            "Twitter fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على تويتر.",
+            "Instagram fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على إنستغرام.",
+            "WhatsApp fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على واتساب.",
+            "Telegram fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على تيليغرام.",
+            "Snapchat fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على سناب شات.",
+            "VK fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على VK.",
+            "PUBG fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على بابجي.",
+            "TikTok fishing.py": "أداة بايثون لإنشاء صفحات تصيد لسرقة بيانات تسجيل الدخول على تيك توك.",
+            "CVE-2022-24086": "ثغرة تنفيذ كود عن بُعد في Adobe Commerce.",
+            "CVE-2023-42793": "ثغرة تجاوز المصادقة في JetBrains TeamCity.",
+            "CVE-2023-34362": "ثغرة في Progress MOVEit Transfer.",
+            "CVE-2023-3519": "ثغرة تنفيذ كود عن بُعد في Citrix NetScaler ADC.",
+            "CVE-2023-27350": "ثغرة في PaperCut MF/NG.",
+            "CVE-2023-38831": "ثغرة في RARLAB WinRAR.",
+            "CVE-2023-36802": "ثغرة في Microsoft Streaming Proxy.",
+            "CVE-2023-28252": "ثغرة في Microsoft Windows CLFS.",
+            "CVE-2023-24489": "ثغرة في Citrix ShareFile.",
+            "CVE-2023-0669": "ثغرة في Fortra GoAnywhere MFT.",
+            "CVE-2023-4966": "ثغرة في Citrix NetScaler ADC.",
+            "تسريب بيانات X (2023)": "عنوان بريد إلكتروني وحسابات لـ 200 مليون مستخدم X.",
+            "تسريب بيانات Yahoo": "بيانات وحسابات 3 مليار حساب.",
+            "Rockyou 2024": "قائمة لكلمات المرور المسربة حديثًا.",
+            "Patator.py": "أداة فحص بالقوة الغاشمة (Brute Force) بتصميم معياري لاختراق الحسابات. تدعم اختبار كلمات المرور عبر بروتوكولات مثل SSH، HTTP(S)، SMTP، RDP، وغيرها. الاستخدام: اختراق الحسابات أو الخدمات عبر محاولات تسجيل دخول متكررة.",
+            "Responder": "أداة مفتوحة المصدر تُستخدم لتسميم الشبكات (LLMNR/NBT-NS Poisoning) وحصاد بيانات الاعتماد في هجمات الرجل في المنتصف (MITM). الاستخدام: سرقة بيانات تسجيل الدخول في الشبكات المحلية، مما قد يُستخدم كجزء من هجمات أوسع.",
+            "Wasky.py": "أداة فحص مواقع الويب تُستخدم للهجمات بالقوة الغاشمة (Brute Force) ضد المسارات، الملفات، أو النماذج. الاستخدام: اكتشاف الملفات أو الأدلة المخفية على مواقع الويب، واختبار نقاط الضعف مثل حقن SQL أو اختراق النماذج.",
+            "Hantsploit3.py": "مكتبة بايثون تُحاكي قدرات Metasploit، تتيح تنفيذ هجمات اختراق متقدمة عبر التحكم في وحدات msfrpc. الاستخدام: بناء أدوات اختراق مخصصة أو تنفيذ هجمات مثل استغلال الثغرات أو اختراق الأنظمة.",
+            "Slowdown.py": "أداة مكتوبة بلغة بايثون تُستخدم لتنفيذ هجمات DDoS من نوع 'Low and Slow'، حيث تُبقي الاتصالات مفتوحة مع الخادم لاستنزاف موارده. الاستخدام: تعطيل خوادم الويب بموارد محدودة من خلال طلبات HTTP بطيئة.",
+            "Togy.py (Low Orbit Ion Cannon)": "أداة هجوم DDoS يمكن دمجها مع سكربتات بايثون لتكثيف الهجمات، تُستخدم لإغراق الخوادم بطلبات UDP أو TCP. الاستخدام: تنفيذ هجمات DDoS بسيطة، غالبًا من قبل مهاجمين مبتدئين فعالة ولكن بسيطة بنسبة لمن تحت التدريب.",
+            "Astaroth.py": "أداة قرصنة متطورة تُستخدم لتجاوز المصادقة الثنائية (2FA) وسرقة البيانات البنكية، قد تُدمج مع سكربتات بايثون لتوسيع قدراتها. الاستخدام: اختراق الحسابات المصرفية أو سرقة بيانات حساسة.",
+            "Recon-T.py": "إطار عمل مكتوب بلغة بايثون لجمع المعلومات الاستخباراتية (OSINT) من مصادر متعددة. الاستخدام: جمع بيانات عن الأهداف (مواقع، أفراد، شركات) كخطوة تمهيدية للاختراق أو هجمات DDoS."
         };
 
         // Initialize Particles.js
@@ -1028,17 +1137,22 @@
             return price * 0.05;
         }
 
-        // Update service price and fee
+        // Update service price, fee, and description
         function updatePrice() {
             const serviceSelect = document.getElementById('service');
             const priceInput = document.getElementById('price');
             const feeInput = document.getElementById('fee');
             const amountInput = document.getElementById('amount');
             const statusSpan = document.getElementById('service-status');
+            const descriptionDiv = document.getElementById('service-description');
             const price = parseFloat(serviceSelect.value);
+            const selectedService = serviceSelect.options[serviceSelect.selectedIndex].text;
+
             priceInput.value = price ? `$${price.toFixed(2)}` : '';
             feeInput.value = price ? `$${calculateFee(price).toFixed(2)}` : '';
             statusSpan.textContent = price ? 'متوفر' : '';
+            descriptionDiv.textContent = serviceDescriptions[selectedService] || '';
+            descriptionDiv.classList.toggle('active', !!selectedService && serviceDescriptions[selectedService]);
             updateAmount();
         }
 
@@ -1057,11 +1171,13 @@
             }
         }
 
-        // Show payment details section with CAPTCHA
+        // Show payment details section with CAPTCHA and download link
         function showPaymentDetails() {
             const service = document.getElementById('service').value;
             const paymentMethod = document.getElementById('payment-method').value;
             const accountNumberInput = document.getElementById('account-number');
+            const downloadLinkInput = document.getElementById('download-link');
+            const selectedService = document.getElementById('service').options[document.getElementById('service').selectedIndex].text;
 
             if (!service || !paymentMethod) {
                 showToast(translations[currentLang].required, 'error');
@@ -1069,6 +1185,8 @@
             }
 
             accountNumberInput.value = config.accountNumbers[paymentMethod] || 'غير متوفر';
+            downloadLinkInput.value = `https://example.com/download/${encodeURIComponent(selectedService)}`; // Placeholder link
+            downloadLinkInput.classList.add('blurred-link');
             document.getElementById('step1').style.display = 'none';
             document.getElementById('payment-details').style.display = 'block';
             document.getElementById('progress-bar').style.width = '100%';
@@ -1092,12 +1210,10 @@
             toastEl.classList.remove('bg-success', 'bg-danger');
             toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
             
-            // التأكد من أن الـ toast يظهر حتى لو كان هناك مشكلة في Bootstrap
             if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
                 const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
                 toast.show();
             } else {
-                // عرض إشعار بديل باستخدام alert في حالة فشل Bootstrap
                 alert(message);
             }
         }
@@ -1120,8 +1236,12 @@
             document.getElementById('fee').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('service-status').textContent = '';
+            document.getElementById('service-description').textContent = '';
+            document.getElementById('service-description').classList.remove('active');
             document.getElementById('account-number').value = '';
             document.getElementById('screenshot').value = '';
+            document.getElementById('download-link').value = '';
+            document.getElementById('download-link').classList.remove('active');
             document.getElementById('telegram-account').value = '';
             document.getElementById('captcha-answer').value = '';
             document.getElementById('order-status').value = 'pending';
@@ -1139,7 +1259,7 @@
 
         // Apply saved preferences (called manually if needed)
         function applyPreferences() {
-            const service = localStorage.getItem('preferredService');
+            const service = localStorage.getItem(' COOKIE Service');
             const paymentMethod = localStorage.getItem('preferredPaymentMethod');
             if (service && paymentMethod) {
                 document.getElementById('service').value = service;
@@ -1156,7 +1276,7 @@
 
         // Send data to Telegram Bot
         async function sendToTelegramBot(data, screenshot) {
-            const { service, paymentMethod, amount, telegramAccount, accountNumber } = data;
+            const { service, paymentMethod, amount, telegramAccount, accountNumber, downloadLink } = data;
             const botToken = config.telegramBotToken;
             const chatId = config.telegramChatId;
             const text = `
@@ -1166,6 +1286,7 @@
 💰 *المبلغ*: ${amount}
 📱 *حساب تيليجرام*: ${telegramAccount}
 🏦 *رقم الحساب*: ${accountNumber}
+🔗 *رابط التحميل*: ${downloadLink}
 📅 *التاريخ*: ${new Date().toLocaleString()}
             `.trim();
 
@@ -1214,15 +1335,16 @@
                 const paymentMethod = document.getElementById('payment-method').value;
                 const amount = document.getElementById('amount').value;
                 const accountNumber = document.getElementById('account-number').value;
+                const downloadLink = document.getElementById('download-link').value;
 
-                // التحقق من رفع إثبات الدفع
+                // Validate screenshot
                 if (!screenshot) {
                     showToast(translations[currentLang].uploadRequired, 'error');
                     console.log("Error: Payment proof not uploaded");
                     return;
                 }
 
-                // التحقق من نوع الصورة
+                // Validate image type
                 const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
                 if (!validTypes.includes(screenshot.type)) {
                     showToast(translations[currentLang].invalidImage, 'error');
@@ -1230,14 +1352,14 @@
                     return;
                 }
 
-                // التحقق من حساب Telegram
+                // Validate Telegram account
                 if (!validateTelegramAccount(telegramAccount)) {
                     showToast(translations[currentLang].invalidTelegram, 'error');
                     console.log("Error: Invalid Telegram account");
                     return;
                 }
 
-                // التحقق من CAPTCHA إذا كان مرئيًا
+                // Validate CAPTCHA if visible
                 const captchaGroup = document.getElementById('captcha-group');
                 if (captchaGroup.style.display === 'block') {
                     if (isNaN(captchaAnswer) || captchaAnswer !== window.captchaAnswer) {
@@ -1251,16 +1373,17 @@
                     return;
                 }
 
-                // إعداد البيانات لإرسالها إلى Telegram
+                // Prepare data for Telegram
                 const telegramData = {
                     service,
                     paymentMethod,
                     amount,
                     telegramAccount,
-                    accountNumber
+                    accountNumber,
+                    downloadLink
                 };
 
-                // إرسال البيانات إلى Telegram
+                // Send data to Telegram
                 const telegramSent = await sendToTelegramBot(telegramData, screenshot);
                 if (!telegramSent) {
                     showToast(translations[currentLang].telegramError, 'error');
@@ -1268,23 +1391,26 @@
                     return;
                 }
 
-                // إذا نجحت العملية
+                // Success: Update UI and show confirmation
                 showToast(translations[currentLang].success, 'success');
                 console.log("Success: Payment confirmed");
                 document.getElementById('order-status').value = 'processing';
+                document.getElementById('download-link').classList.add('active');
 
-                // إظهار نافذة التأكيد
+                // Show confirmation modal
                 const modal = new bootstrap.Modal(document.getElementById('confirmationModal'), { keyboard: false });
                 document.getElementById('modal-service').textContent = service;
                 document.getElementById('modal-amount').textContent = amount;
                 document.getElementById('modal-telegram').textContent = telegramAccount;
+                document.getElementById('modal-download-link').href = downloadLink;
+                document.getElementById('modal-download-link').textContent = translations[currentLang].downloadLink;
                 modal.show();
 
-                // محاكاة معالجة الطلب (10 دقائق)
+                // Simulate order processing (10 minutes)
                 setTimeout(() => {
                     document.getElementById('order-status').value = 'completed';
-                    initializeForm(); // إعادة تعيين النموذج بعد النجاح
-                }, 600000); // 10 دقائق
+                    initializeForm(); // Reset form after success
+                }, 600000); // 10 minutes
 
             } catch (error) {
                 console.error("Form submission error:", error);
@@ -1319,20 +1445,18 @@
             document.querySelectorAll('.form-label')[3].textContent = translations[currentLang].selectPayment;
             document.querySelectorAll('.form-label')[4].textContent = translations[currentLang].totalAmount;
             document.querySelectorAll('.btn-custom')[1].textContent = translations[currentLang].next;
-            document.querySelector('.alert-info').textContent = translations[currentLang].paymentDetails;
+            document.querySelector('.alert-info').            textContent = translations[currentLang].paymentDetails;
             document.querySelectorAll('.form-label')[5].textContent = translations[currentLang].accountNumber;
             document.querySelectorAll('.form-label')[6].textContent = translations[currentLang].uploadProof;
-            document.querySelectorAll('.form-label')[7].textContent = translations[currentLang].captcha;
+            document.querySelectorAll('.form-label')[7].textContent = translations[currentLang].downloadLink;
             document.querySelectorAll('.form-label')[8].textContent = translations[currentLang].telegramAccount;
             document.querySelectorAll('.form-label')[9].textContent = translations[currentLang].orderStatus;
-            document.querySelectorAll('.btn-custom')[2].textContent = translations[currentLang].confirmPayment;
+            document.querySelector('#confirm-payment').textContent = translations[currentLang].confirmPayment;
             document.querySelectorAll('.section-title')[1].textContent = translations[currentLang].transactions;
             document.querySelectorAll('.section-title')[2].textContent = translations[currentLang].popularServices;
             document.querySelector('#error-page h2').textContent = translations[currentLang].error;
             document.querySelector('#error-page p').textContent = translations[currentLang].errorMessage;
-            document.querySelector('#error-page button').textContent = translations[currentLang].retry;
-
-            // Update tooltips
+            document.querySelector('#error-page .btn-custom').textContent = translations[currentLang].retry;
             document.querySelectorAll('.tooltip-text')[0].textContent = translations[currentLang].tooltipService;
             document.querySelectorAll('.tooltip-text')[1].textContent = translations[currentLang].tooltipPrice;
             document.querySelectorAll('.tooltip-text')[2].textContent = translations[currentLang].tooltipFee;
@@ -1340,98 +1464,36 @@
             document.querySelectorAll('.tooltip-text')[4].textContent = translations[currentLang].tooltipAmount;
             document.querySelectorAll('.tooltip-text')[5].textContent = translations[currentLang].tooltipAccount;
             document.querySelectorAll('.tooltip-text')[6].textContent = translations[currentLang].tooltipProof;
-            document.querySelectorAll('.tooltip-text')[7].textContent = translations[currentLang].tooltipCaptcha;
-            document.querySelectorAll('.tooltip-text')[8].textContent = translations[currentLang].tooltipTelegram;
-            document.querySelectorAll('.tooltip-text')[9].textContent = translations[currentLang].tooltipStatus;
+            document.querySelectorAll('.tooltip-text')[7].textContent = translations[currentLang].tooltipDownloadLink;
+            document.querySelectorAll('.tooltip-text')[8].textContent = translations[currentLang].tooltipCaptcha;
+            document.querySelectorAll('.tooltip-text')[9].textContent = translations[currentLang].tooltipTelegram;
+            document.querySelectorAll('.tooltip-text')[10].textContent = translations[currentLang].tooltipStatus;
 
-            // Update order status options
-            const orderStatusSelect = document.getElementById('order-status');
-            orderStatusSelect.innerHTML = `
-                <option value="pending">${currentLang === 'ar' ? 'قيد الانتظار' : 'Pending'}</option>
-                <option value="processing">${currentLang === 'ar' ? 'جاري المعالجة' : 'Processing'}</option>
-                <option value="completed">${currentLang === 'ar' ? 'مكتمل' : 'Completed'}</option>
-                <option value="failed">${currentLang === 'ar' ? 'فشل' : 'Failed'}</option>
-            `;
+            // Update placeholder for Telegram input
+            document.getElementById('telegram-account').placeholder = currentLang === 'ar' ? '@username' : 'Enter @username';
 
-            // Update modal
-            document.querySelector('#confirmationModal .modal-title').textContent = currentLang === 'ar' ? 'تأكيد الطلب' : 'Order Confirmation';
-            document.querySelector('#confirmationModal .modal-body p:first-child').textContent = currentLang === 'ar' ? 'تم إرسال تأكيد الطلب إلى بريدك الإلكتروني.' : 'Order confirmation has been sent to your email.';
+            // Update table headers
+            const tableHeaders = document.querySelectorAll('#transaction-table th');
+            tableHeaders[0].textContent = currentLang === 'ar' ? 'العميل' : 'Client';
+            tableHeaders[1].textContent = currentLang === 'ar' ? 'الخدمة' : 'Service';
+            tableHeaders[2].textContent = currentLang === 'ar' ? 'المبلغ' : 'Amount';
+            tableHeaders[3].textContent = currentLang === 'ar' ? 'طريقة الدفع' : 'Payment Method';
+            tableHeaders[4].textContent = currentLang === 'ar' ? 'رقم العملية' : 'Transaction ID';
+            tableHeaders[5].textContent = currentLang === 'ar' ? 'التاريخ' : 'Date';
         }
 
-        // Mock API for exchange rates
-        async function fetchExchangeRates() {
-            try {
-                return { USD: 1, EGP: 48.5 }; // Mock rates
-            } catch (error) {
-                showErrorPage();
-            }
-        }
-
-        // Show error page
-        function showErrorPage() {
-            document.getElementById('landing-page').style.display = 'none';
-            document.getElementById('main-panel').style.display = 'none';
-            document.getElementById('error-page').style.display = 'block';
-        }
-
-        // Open chat window
-        function openChat() {
-            const chatWindow = document.getElementById('chat-window');
-            chatWindow.style.display = chatWindow.style.display === 'none' ? 'block' : 'none';
-        }
-
-        // Lazy load transactions
-        let transactionPage = 1;
-        function loadMoreTransactions() {
-            const tableBody = document.getElementById('transaction-table');
-            const newRows = [
-                `<tr><td>ياسر عبدالله</td><td>ادوات صيد مدفوعه</td><td>$10</td><td>Payeer - USD <i class="fas fa-wallet currency-icon"></i></td><td>12345678${transactionPage}</td><td>2025-04-16</td></tr>`,
-                `<tr><td>Emma Wilson</td><td>ادوات صيد مدفوعه</td><td>$10</td><td>Payeer - USD <i class="fas fa-wallet currency-icon"></i></td><td>12345678${transactionPage + 1}</td><td>2025-04-16</td></tr>`,
-                `<tr><td>James Carter</td><td>تطبيق اختراق الهاتف</td><td>$10</td><td>Payeer - USD <i class="fas fa-wallet currency-icon"></i></td><td>12345678${transactionPage + 2}</td><td>2025-04-16</td></tr>`
-            ];
-            tableBody.insertAdjacentHTML('beforeend', newRows.join(''));
-            transactionPage += 3;
-        }
-
-        // Initialize lazy loading
-        function initLazyLoading() {
-            const observer = new IntersectionObserver(entries => {
-                if (entries[0].isIntersecting) {
-                    loadMoreTransactions();
-                }
-            }, { threshold: 0.1 });
-            observer.observe(document.querySelector('.table-dark'));
-        }
-
-        // Visitor counter logic
-        function initVisitorCounter() {
-            let visitorCount = 63247;
-            const visitorCountElement = document.getElementById('visitor-count');
-            visitorCountElement.textContent = visitorCount.toLocaleString('en-US');
-
-            function incrementVisitorCount() {
-                const increment = Math.floor(Math.random() * 4) + 1;
-                visitorCount += increment;
-                visitorCountElement.textContent = visitorCount.toLocaleString('en-US');
-                const randomInterval = Math.floor(Math.random() * 30000) + 1000;
-                setTimeout(incrementVisitorCount, randomInterval);
-            }
-
-            incrementVisitorCount();
-        }
-
-        // Visitor stats chart
+        // Initialize visitor stats chart
         function initVisitorChart() {
             const ctx = document.getElementById('visitorChart').getContext('2d');
-            const visitorChart = new Chart(ctx, {
+            new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
+                    labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
                     datasets: [{
-                        label: 'عدد الزوار',
-                        data: [62000, 62500, 63000, 62750, 63247, 63500, 64000],
-                        borderColor: '#00ff99',
-                        backgroundColor: 'rgba(0, 255, 150, 0.2)',
+                        label: translations[currentLang].visitorStats || 'Visitors',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000],
+                        borderColor: 'rgba(0, 255, 153, 1)',
+                        backgroundColor: 'rgba(0, 255, 153, 0.2)',
                         fill: true,
                         tension: 0.4
                     }]
@@ -1440,13 +1502,11 @@
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: false,
-                            ticks: { color: '#ffffff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            beginAtZero: true,
+                            ticks: { color: '#ffffff' }
                         },
                         x: {
-                            ticks: { color: '#ffffff' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            ticks: { color: '#ffffff' }
                         }
                     },
                     plugins: {
@@ -1460,24 +1520,87 @@
 
         // Toggle visitor stats visibility
         function toggleVisitorStats() {
-            const statsDiv = document.getElementById('visitor-stats');
-            statsDiv.classList.toggle('active');
+            const visitorStats = document.getElementById('visitor-stats');
+            visitorStats.classList.toggle('active');
+            if (visitorStats.classList.contains('active') && !window.visitorChartInitialized) {
+                initVisitorChart();
+                window.visitorChartInitialized = true;
+            }
+        }
+
+        // Open chat window
+        function openChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Lazy load images
+        function lazyLoadImages() {
+            const images = document.querySelectorAll('img[data-src]');
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            images.forEach(img => observer.observe(img));
+        }
+
+        // Update visitor count (simulated)
+        function updateVisitorCount() {
+            const visitorCount = document.getElementById('visitor-count');
+            let count = parseInt(visitorCount.textContent.replace(',', '')) || 63247;
+            setInterval(() => {
+                count += Math.floor(Math.random() * 10);
+                visitorCount.textContent = count.toLocaleString();
+            }, 60000);
         }
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
-            initializeForm();
             updateLanguage();
-            fetchExchangeRates().then(rates => {
-                console.log('Exchange rates:', rates);
+            updateVisitorCount();
+            lazyLoadImages();
+            initializeForm();
+            // Do not load preferences automatically
+            document.getElementById('payment-method').addEventListener('change', updateAmount);
+
+            // Add input validation for Telegram account
+            document.getElementById('telegram-account').addEventListener('input', function () {
+                const isValid = validateTelegramAccount(this.value);
+                this.classList.toggle('is-valid', isValid);
+                this.classList.toggle('is-invalid', !isValid && this.value !== '');
             });
-            initLazyLoading();
-            initVisitorCounter();
-            initVisitorChart();
+
+            // Ensure screenshot input is validated
+            document.getElementById('screenshot').addEventListener('change', function () {
+                const file = this.files[0];
+                const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                if (file && !validTypes.includes(file.type)) {
+                    showToast(translations[currentLang].invalidImage, 'error');
+                    this.value = '';
+                }
+            });
         });
-    </script>
-    <script>
-        (function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'931b614e589eb007',t:'MTc0NDg4NzIyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
+
+        // Handle modal close to reset form
+        document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', () => {
+            initializeForm();
+        });
+
+        // Error handling for network issues
+        window.addEventListener('offline', () => {
+            showToast('You are offline. Please check your internet connection.', 'error');
+        });
+
+        // Prevent form resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
     </script>
 </body>
 </html>
