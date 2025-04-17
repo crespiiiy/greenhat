@@ -1628,6 +1628,44 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('language').addEventListener('change', () => {
     console.log(`Language switched to: ${currentLang}`);
 });
+// Prevent overscroll at the top and bottom of the page
+document.addEventListener('wheel', (event) => {
+    const deltaY = event.deltaY;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    // Prevent scrolling up when at the top
+    if (deltaY < 0 && scrollTop <= 0) {
+        event.preventDefault();
+    }
+
+    // Prevent scrolling down when at the bottom
+    if (deltaY > 0 && scrollTop + windowHeight >= documentHeight) {
+        event.preventDefault();
+    }
+}, { passive: false });
+
+// Prevent touchmove overscroll on mobile devices
+document.addEventListener('touchmove', (event) => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const touch = event.touches[0];
+    const touchY = touch.clientY;
+    const isScrollingUp = touchY > (event.targetTouches?.[0]?.clientY || touchY);
+    const isScrollingDown = touchY < (event.targetTouches?.[0]?.clientY || touchY);
+
+    // Prevent scrolling up when at the top
+    if (isScrollingUp && scrollTop <= 0) {
+        event.preventDefault();
+    }
+
+    // Prevent scrolling down when at the bottom
+    if (isScrollingDown && scrollTop + windowHeight >= documentHeight) {
+        event.preventDefault();
+    }
+}, { passive: false });
 </script>
 
 </body>
