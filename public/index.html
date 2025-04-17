@@ -1,3 +1,5 @@
+
+<DOCUMENT filename="index.html">
 <script type="text/javascript">
         var gk_isXlsx = false;
         var gk_xlsxFileLookup = {};
@@ -726,7 +728,7 @@
                             </div>
                             <div class="col-md-12 form-group" id="captcha-group" style="display: none;">
                                 <label class="form-label">التحقق: كم يساوي <span id="captcha-question"></span>؟</label>
-                                <input type="number" class="form-control" id="captcha-answer">
+                                <input type="number" class="form-control" id="captcha-answer" required>
                                 <span class="tooltip-text">أجب على السؤال للتحقق من أنك لست روبوتًا</span>
                                 <i class="fas fa-shield-alt"></i>
                             </div>
@@ -963,7 +965,7 @@
                 invalidImage: "يرجى رفع صورة بصيغة PNG أو JPEG",
                 invalidCaptcha: "إجابة التحقق غير صحيحة",
                 invalidTelegram: "يرجى إدخال حساب تيليجرام صالح (مثل @username)",
-                success: "تم تأكيد الدفع بنجاح! سيتم معالجة طلبك خلال 5-20 دقائق.",
+                success: "تم تأكيد الدفع بنجاح! سيتم معالجة طلبك خلال 5-20 دقيقة.",
                 telegramError: "فشل في إرسال البيانات إلى تيليجرام. يرجى المحاولة لاحقًا.",
                 welcomeTitle: "مرحبًا بك في Green Hat Platform",
                 welcomeText: "The most trusted platform with unparalleled security and lightning-fast speed.",
@@ -1081,7 +1083,7 @@
             }
         }
 
-        // Show payment details section
+        // Show payment details section with CAPTCHA
         function showPaymentDetails() {
             const service = document.getElementById('service').value;
             const paymentMethod = document.getElementById('payment-method').value;
@@ -1097,9 +1099,11 @@
             document.getElementById('payment-details').style.display = 'block';
             document.getElementById('progress-bar').style.width = '100%';
 
+            // Generate new CAPTCHA
             const num1 = Math.floor(Math.random() * 10);
             const num2 = Math.floor(Math.random() * 10);
             document.getElementById('captcha-question').textContent = `${num1} + ${num2}`;
+            document.getElementById('captcha-answer').value = ''; // Reset CAPTCHA input
             document.getElementById('captcha-group').style.display = 'block';
             window.captchaAnswer = num1 + num2;
 
@@ -1135,6 +1139,16 @@
             document.getElementById('fee').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('service-status').textContent = '';
+            document.getElementById('account-number').value = '';
+            document.getElementById('screenshot').value = '';
+            document.getElementById('telegram-account').value = '';
+            document.getElementById('captcha-answer').value = '';
+            document.getElementById('order-status').value = 'pending';
+            document.getElementById('step1').style.display = 'block';
+            document.getElementById('payment-details').style.display = 'none';
+            document.getElementById('progress-bar').style.width = '50%';
+            document.getElementById('captcha-group').style.display = 'none';
+            window.captchaAnswer = null; // Reset CAPTCHA answer
         }
 
         // Load user preferences from localStorage (only after user interaction)
@@ -1232,8 +1246,16 @@
                 return;
             }
 
-            if (captchaAnswer !== window.captchaAnswer) {
-                showToast(translations[currentLang].invalidCaptcha, 'error');
+            // Check if CAPTCHA is visible and validate the answer
+            const captchaGroup = document.getElementById('captcha-group');
+            if (captchaGroup.style.display === 'block') {
+                if (isNaN(captchaAnswer) || captchaAnswer !== window.captchaAnswer) {
+                    showToast(translations[currentLang].invalidCaptcha, 'error');
+                    return;
+                }
+            } else {
+                // If CAPTCHA is not visible, ensure the user goes through the proper flow
+                showToast(translations[currentLang].required, 'error');
                 return;
             }
 
@@ -1263,6 +1285,7 @@
 
             setTimeout(() => {
                 document.getElementById('order-status').value = 'completed';
+                initializeForm(); // Reset form after successful submission
             }, 600000); // Mock 10-minute processing
         });
 
@@ -1450,5 +1473,5 @@
             initVisitorChart();
         });
     </script>
-</body>
-</html>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'931b614e589eb007',t:'MTc0NDg4NzIyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html></DOCUMENT>
