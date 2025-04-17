@@ -1,5 +1,3 @@
-
-<DOCUMENT filename="index.html">
 <script type="text/javascript">
         var gk_isXlsx = false;
         var gk_xlsxFileLookup = {};
@@ -29,37 +27,7 @@
         }
         return gk_fileData[filename] || "";
         }
-        </script><script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row =>
-                    row.some(cell => cell !== '' && cell !== null && cell !== undefined)
-                );
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-</script>
-<!DOCTYPE html>
+        </script><!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -207,6 +175,10 @@
             color: #ccc;
             margin-bottom: 5px;
             display: block;
+        }
+
+        crisp-client {
+            display: none !important;
         }
 
         .form-control,
@@ -750,7 +722,7 @@
                             </div>
                         </div>
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-custom">تأكيد الدفع</button>
+                            <button type="submit" class="btn btn-custom" id="confirm-payment">تأكيد الدفع</button>
                         </div>
                     </div>
                 </form>
@@ -979,7 +951,8 @@
                 tooltipProof: "ارفع صورة إثبات الدفع لتأكيد العملية",
                 tooltipCaptcha: "أجب على السؤال للتحقق من أنك لست روبوتًا",
                 tooltipTelegram: "أدخل حسابك على تيليجرام (مثل @username) للتواصل مع فريق الدعم",
-                tooltipStatus: "الحالة الحالية لطلبك"
+                tooltipStatus: "الحالة الحالية لطلبك",
+                unexpectedError: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
             },
             en: {
                 title: "Green Hat Platform",
@@ -1020,7 +993,8 @@
                 tooltipProof: "Upload a screenshot of the payment proof to confirm the transaction",
                 tooltipCaptcha: "Answer the question to verify you're not a robot",
                 tooltipTelegram: "Enter your Telegram account (e.g., @username) for communication with the support team",
-                tooltipStatus: "Current status of your request"
+                tooltipStatus: "Current status of your request",
+                unexpectedError: "An unexpected error occurred. Please try again."
             }
         };
 
@@ -1117,8 +1091,15 @@
             toastBody.textContent = message;
             toastEl.classList.remove('bg-success', 'bg-danger');
             toastEl.classList.add(type === 'success' ? 'bg-success' : 'bg-danger');
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
+            
+            // التأكد من أن الـ toast يظهر حتى لو كان هناك مشكلة في Bootstrap
+            if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+                const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+                toast.show();
+            } else {
+                // عرض إشعار بديل باستخدام alert في حالة فشل Bootstrap
+                alert(message);
+            }
         }
 
         // Save user preferences to localStorage
@@ -1220,97 +1201,96 @@
         }
 
         // Handle form submission
-// Handle form submission
-document.getElementById('service-form').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    console.log("Form submission triggered"); // لتتبع تشغيل الحدث
+        document.getElementById('service-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            console.log("Form submission triggered");
 
-    try {
-        const screenshot = document.getElementById('screenshot').files[0];
-        const telegramAccount = document.getElementById('telegram-account').value;
-        const captchaAnswer = parseInt(document.getElementById('captcha-answer').value);
-        const service = document.getElementById('service').options[document.getElementById('service').selectedIndex].text;
-        const paymentMethod = document.getElementById('payment-method').value;
-        const amount = document.getElementById('amount').value;
-        const accountNumber = document.getElementById('account-number').value;
+            try {
+                const screenshotInput = document.getElementById('screenshot');
+                const screenshot = screenshotInput.files[0];
+                const telegramAccount = document.getElementById('telegram-account').value;
+                const captchaAnswer = parseInt(document.getElementById('captcha-answer').value);
+                const service = document.getElementById('service').options[document.getElementById('service').selectedIndex].text;
+                const paymentMethod = document.getElementById('payment-method').value;
+                const amount = document.getElementById('amount').value;
+                const accountNumber = document.getElementById('account-number').value;
 
-        // التحقق من رفع إثبات الدفع
-        if (!screenshot) {
-            showToast(translations[currentLang].uploadRequired, 'error');
-            console.log("Error: Payment proof not uploaded");
-            return;
-        }
+                // التحقق من رفع إثبات الدفع
+                if (!screenshot) {
+                    showToast(translations[currentLang].uploadRequired, 'error');
+                    console.log("Error: Payment proof not uploaded");
+                    return;
+                }
 
-        // التحقق من نوع الصورة
-        const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-        if (!validTypes.includes(screenshot.type)) {
-            showToast(translations[currentLang].invalidImage, 'error');
-            console.log("Error: Invalid image type");
-            return;
-        }
+                // التحقق من نوع الصورة
+                const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+                if (!validTypes.includes(screenshot.type)) {
+                    showToast(translations[currentLang].invalidImage, 'error');
+                    console.log("Error: Invalid image type");
+                    return;
+                }
 
-        // التحقق من حساب Telegram
-        if (!validateTelegramAccount(telegramAccount)) {
-            showToast(translations[currentLang].invalidTelegram, 'error');
-            console.log("Error: Invalid Telegram account");
-            return;
-        }
+                // التحقق من حساب Telegram
+                if (!validateTelegramAccount(telegramAccount)) {
+                    showToast(translations[currentLang].invalidTelegram, 'error');
+                    console.log("Error: Invalid Telegram account");
+                    return;
+                }
 
-        // التحقق من CAPTCHA إذا كان مرئيًا
-        const captchaGroup = document.getElementById('captcha-group');
-        if (captchaGroup.style.display === 'block') {
-            if (isNaN(captchaAnswer) || captchaAnswer !== window.captchaAnswer) {
-                showToast(translations[currentLang].invalidCaptcha, 'error');
-                console.log("Error: Invalid CAPTCHA answer");
-                return;
+                // التحقق من CAPTCHA إذا كان مرئيًا
+                const captchaGroup = document.getElementById('captcha-group');
+                if (captchaGroup.style.display === 'block') {
+                    if (isNaN(captchaAnswer) || captchaAnswer !== window.captchaAnswer) {
+                        showToast(translations[currentLang].invalidCaptcha, 'error');
+                        console.log("Error: Invalid CAPTCHA answer");
+                        return;
+                    }
+                } else {
+                    showToast(translations[currentLang].required, 'error');
+                    console.log("Error: CAPTCHA not visible, user must go through proper flow");
+                    return;
+                }
+
+                // إعداد البيانات لإرسالها إلى Telegram
+                const telegramData = {
+                    service,
+                    paymentMethod,
+                    amount,
+                    telegramAccount,
+                    accountNumber
+                };
+
+                // إرسال البيانات إلى Telegram
+                const telegramSent = await sendToTelegramBot(telegramData, screenshot);
+                if (!telegramSent) {
+                    showToast(translations[currentLang].telegramError, 'error');
+                    console.log("Error: Failed to send data to Telegram");
+                    return;
+                }
+
+                // إذا نجحت العملية
+                showToast(translations[currentLang].success, 'success');
+                console.log("Success: Payment confirmed");
+                document.getElementById('order-status').value = 'processing';
+
+                // إظهار نافذة التأكيد
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'), { keyboard: false });
+                document.getElementById('modal-service').textContent = service;
+                document.getElementById('modal-amount').textContent = amount;
+                document.getElementById('modal-telegram').textContent = telegramAccount;
+                modal.show();
+
+                // محاكاة معالجة الطلب (10 دقائق)
+                setTimeout(() => {
+                    document.getElementById('order-status').value = 'completed';
+                    initializeForm(); // إعادة تعيين النموذج بعد النجاح
+                }, 600000); // 10 دقائق
+
+            } catch (error) {
+                console.error("Form submission error:", error);
+                showToast(translations[currentLang].unexpectedError, 'error');
             }
-        } else {
-            showToast(translations[currentLang].required, 'error');
-            console.log("Error: CAPTCHA not visible, user must go through proper flow");
-            return;
-        }
-
-        // إعداد البيانات لإرسالها إلى Telegram
-        const telegramData = {
-            service,
-            paymentMethod,
-            amount,
-            telegramAccount,
-            accountNumber
-        };
-
-        // إرسال البيانات إلى Telegram
-        const telegramSent = await sendToTelegramBot(telegramData, screenshot);
-        if (!telegramSent) {
-            showToast(translations[currentLang].telegramError, 'error');
-            console.log("Error: Failed to send data to Telegram");
-            return;
-        }
-
-        // إذا نجحت العملية
-        showToast(translations[currentLang].success, 'success');
-        console.log("Success: Payment confirmed");
-        document.getElementById('order-status').value = 'processing';
-
-        // إظهار نافذة التأكيد
-        const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-        document.getElementById('modal-service').textContent = service;
-        document.getElementById('modal-amount').textContent = amount;
-        document.getElementById('modal-telegram').textContent = telegramAccount;
-        modal.show();
-
-        // محاكاة معالجة الطلب (10 دقائق)
-        setTimeout(() => {
-            document.getElementById('order-status').value = 'completed';
-            initializeForm(); // إعادة تعيين النموذج بعد النجاح
-        }, 600000); // 10 دقائق
-
-    } catch (error) {
-        // معالجة أي استثناءات غير متوقعة
-        console.error("Form submission error:", error);
-        showToast("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.", 'error');
-    }
-});
+        });
 
         // Input validation
         function validateInput(input) {
@@ -1496,5 +1476,8 @@ document.getElementById('service-form').addEventListener('submit', async functio
             initVisitorChart();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'931b614e589eb007',t:'MTc0NDg4NzIyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
-</html></DOCUMENT>
+    <script>
+        (function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'931b614e589eb007',t:'MTc0NDg4NzIyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();
+    </script>
+</body>
+</html>
