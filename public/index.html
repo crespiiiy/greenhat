@@ -27,9 +27,38 @@
         }
         return gk_fileData[filename] || "";
         }
-        </script><!DOCTYPE html>
-<html lang="ar" dir="rtl">
+        </script><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
 
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row =>
+                    row.some(cell => cell !== '' && cell !== null && cell !== undefined)
+                );
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+</script>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,6 +67,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js"></script>
     <style>
         :root {
             --primary-color: #00ff99;
@@ -571,7 +601,6 @@
         }
     </style>
 </head>
-
 <body>
     <!-- Landing Page -->
     <div id="landing-page">
@@ -935,6 +964,7 @@
                 invalidCaptcha: "إجابة التحقق غير صحيحة",
                 invalidTelegram: "يرجى إدخال حساب تيليجرام صالح (مثل @username)",
                 success: "تم تأكيد الدفع بنجاح! سيتم معالجة طلبك خلال 5-20 دقائق.",
+                telegramError: "فشل في إرسال البيانات إلى تيليجرام. يرجى المحاولة لاحقًا.",
                 welcomeTitle: "مرحبًا بك في Green Hat Platform",
                 welcomeText: "The most trusted platform with unparalleled security and lightning-fast speed.",
                 join: "Join Now",
@@ -975,6 +1005,7 @@
                 invalidCaptcha: "Incorrect verification answer",
                 invalidTelegram: "Please enter a valid Telegram account (e.g., @username)",
                 success: "Payment confirmed successfully! Your request will be processed within 5-20 minutes.",
+                telegramError: "Failed to send data to Telegram. Please try again later.",
                 welcomeTitle: "Welcome to Green Hat Platform",
                 welcomeText: "The most trusted platform with unparalleled security and lightning-fast speed.",
                 join: "Join Now",
@@ -1061,26 +1092,11 @@
                 return;
             }
 
-            const accountNumbers = {
-                'Payeer - USD': 'P1130544382',
-                'Vodafone Cash': 'Contact the support: https://t.me/Crespii_bot',
-                'Binance - BNB': '0x691cff48c4e21dbdb49452507ce95b40a66ccb04',
-                'BYBIT - USDT': '0x1B1468F18Ed86cB680e5A47D8e706D1464D243ED',
-                'Trust Wallet - USDT': '0x88ea63730a9b4c6228901deedc7e9834dd544490',
-                'Orange Cash': 'Contact the support: https://t.me/Crespii_bot',
-                'Etisalat Cash': 'Contact the support: https://t.me/Crespii_bot',
-                'stc pay': 'Contact the support: https://t.me/Crespii_bot',
-                'Asia': 'Contact the support: https://t.me/Crespii_bot',
-                'likeCard': 'Contact the support: https://t.me/Crespii_bot',
-                'Telegram Wallet - USDT TRC20': 'TVW2JZiszzHr4EyrbRAtCbU4cN9d13UvJN'
-            };
-
-            accountNumberInput.value = accountNumbers[paymentMethod] || 'غير متوفر';
+            accountNumberInput.value = config.accountNumbers[paymentMethod] || 'غير متوفر';
             document.getElementById('step1').style.display = 'none';
             document.getElementById('payment-details').style.display = 'block';
             document.getElementById('progress-bar').style.width = '100%';
 
-            
             const num1 = Math.floor(Math.random() * 10);
             const num2 = Math.floor(Math.random() * 10);
             document.getElementById('captcha-question').textContent = `${num1} + ${num2}`;
@@ -1090,7 +1106,7 @@
             savePreferences();
         }
 
-        
+        // Show toast notification
         function showToast(message, type = 'success') {
             const toastEl = document.getElementById('toast');
             const toastBody = toastEl.querySelector('.toast-body');
@@ -1143,12 +1159,62 @@
             return telegramRegex.test(telegram);
         }
 
+        // Send data to Telegram Bot
+        async function sendToTelegramBot(data, screenshot) {
+            const { service, paymentMethod, amount, telegramAccount, accountNumber } = data;
+            const botToken = config.telegramBotToken;
+            const chatId = config.telegramChatId;
+            const text = `
+📋 *طلب جديد*
+🛠 *الخدمة*: ${service}
+💳 *طريقة الدفع*: ${paymentMethod}
+💰 *المبلغ*: ${amount}
+📱 *حساب تيليجرام*: ${telegramAccount}
+🏦 *رقم الحساب*: ${accountNumber}
+📅 *التاريخ*: ${new Date().toLocaleString()}
+            `.trim();
+
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('caption', text);
+            formData.append('parse_mode', 'Markdown');
+
+            if (screenshot) {
+                formData.append('photo', screenshot);
+            } else {
+                formData.append('text', text);
+            }
+
+            try {
+                const response = await fetch(
+                    screenshot
+                        ? `https://api.telegram.org/bot${botToken}/sendPhoto`
+                        : `https://api.telegram.org/bot${botToken}/sendMessage`,
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+                if (!response.ok) {
+                    throw new Error('Failed to send to Telegram');
+                }
+                return true;
+            } catch (error) {
+                console.error('Telegram Error:', error);
+                return false;
+            }
+        }
+
         // Handle form submission
-        document.getElementById('service-form').addEventListener('submit', function (e) {
+        document.getElementById('service-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             const screenshot = document.getElementById('screenshot').files[0];
             const telegramAccount = document.getElementById('telegram-account').value;
             const captchaAnswer = parseInt(document.getElementById('captcha-answer').value);
+            const service = document.getElementById('service').options[document.getElementById('service').selectedIndex].text;
+            const paymentMethod = document.getElementById('payment-method').value;
+            const amount = document.getElementById('amount').value;
+            const accountNumber = document.getElementById('account-number').value;
 
             if (!screenshot) {
                 showToast(translations[currentLang].uploadRequired, 'error');
@@ -1171,13 +1237,27 @@
                 return;
             }
 
+            const telegramData = {
+                service,
+                paymentMethod,
+                amount,
+                telegramAccount,
+                accountNumber
+            };
+
+            const telegramSent = await sendToTelegramBot(telegramData, screenshot);
+            if (!telegramSent) {
+                showToast(translations[currentLang].telegramError, 'error');
+                return;
+            }
+
             showToast(translations[currentLang].success);
             document.getElementById('order-status').value = 'processing';
 
             // Show confirmation modal
             const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-            document.getElementById('modal-service').textContent = document.getElementById('service').options[document.getElementById('service').selectedIndex].text;
-            document.getElementById('modal-amount').textContent = document.getElementById('amount').value;
+            document.getElementById('modal-service').textContent = service;
+            document.getElementById('modal-amount').textContent = amount;
             document.getElementById('modal-telegram').textContent = telegramAccount;
             modal.show();
 
@@ -1371,5 +1451,4 @@
         });
     </script>
 </body>
-
 </html>
