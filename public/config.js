@@ -1,6 +1,6 @@
 const config = {
-    telegramBotToken: 'YOUR_TELEGRAM_BOT_TOKEN', // استبدل بتوكن البوت الخاص بك
-    telegramChatId: 'YOUR_CHAT_ID', // استبدل بمعرف الدردشة الخاص بك
+    telegramBotToken: '8166679147:AAHFsH599FDs4kbWTcWdSrSDPRWHwK_ZRLM', // استبدل بتوكن البوت الخاص بك
+    telegramChatId: '6466421046', // استبدل بمعرف الدردشة الخاص بك
     accountNumbers: {
         'Payeer - USD': 'P1130544382',
         'Vodafone Cash': 'Contact the support: https://t.me/Crespii_bot',
