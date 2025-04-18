@@ -1273,10 +1273,18 @@
 
         // Send data to Telegram Bot
         async function sendToTelegramBot(data, screenshot) {
-            const { service, paymentMethod, amount, telegramAccount, accountNumber, downloadLink } = data;
-            const botToken = config.telegramBotToken;
-            const chatId = config.telegramChatId;
-            const text = `
+    const { service, paymentMethod, amount, telegramAccount, accountNumber, downloadLink } = data;
+    const botToken = config.telegramBotToken;
+    const chatId = config.telegramChatId;
+
+    // التحقق من إعدادات التكوين
+    if (!botToken || !chatId) {
+        console.error('Configuration Error: telegramBotToken or telegramChatId is missing in config.js');
+        showToast('خطأ في الإعدادات: رمز البوت أو معرف الدردشة غير موجود.', 'error');
+        return false;
+    }
+
+    const text = `
 📋 *${translations[currentLang].newOrder || 'طلب جديد'}*
 🛠 *${translations[currentLang].confirmationService}:* ${service}
 💳 *${translations[currentLang].selectPayment}:* ${paymentMethod}
@@ -1285,39 +1293,58 @@
 🏦 *${translations[currentLang].accountNumber}:* ${accountNumber}
 🔗 *${translations[currentLang].confirmationDownload}:* ${downloadLink}
 📅 *${translations[currentLang].date || 'التاريخ'}:* ${new Date().toLocaleString()}
-            `.trim();
+    `.trim();
 
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('caption', text);
-            formData.append('parse_mode', 'Markdown');
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    formData.append('caption', text);
+    formData.append('parse_mode', 'Markdown');
 
-            if (screenshot) {
-                formData.append('photo', screenshot);
-            } else {
-                formData.append('text', text);
-            }
+    if (screenshot) {
+        // التحقق من حجم الصورة (الحد الأقصى 10 ميغابايت لـ Telegram)
+        if (screenshot.size > 10 * 1024 * 1024) {
+            showToast('الصورة كبيرة جدًا. يرجى رفع صورة أقل من 10 ميغابايت.', 'error');
+            return false;
+        }
+        formData.append('photo', screenshot);
+    } else {
+        formData.append('text', text);
+    }
 
-            try {
-                const response = await fetch(
-                    screenshot
-                        ? `https://api.telegram.org/bot${botToken}/sendPhoto`
-                        : `https://api.telegram.org/bot${botToken}/sendMessage`,
-                    {
-                        method: 'POST',
-                        body: formData
-                    }
-                );
-                if (!response.ok) {
-                    throw new Error('Failed to send to Telegram');
-                }
-                return true;
-            } catch (error) {
-                console.error('Telegram Error:', error);
-                return false;
-            }
+    try {
+        const endpoint = screenshot
+            ? `https://api.telegram.org/bot${botToken}/sendPhoto`
+            : `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            body: formData
+        });
+
+        const responseData = await response.json(); // قراءة استجابة JSON
+
+        if (!response.ok) {
+            console.error('Telegram API Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                responseData
+            });
+            throw new Error(`فشل إرسال البيانات إلى Telegram: ${responseData.description || 'خطأ غير معروف'}`);
         }
 
+        if (!responseData.ok) {
+            console.error('Telegram API Response Error:', responseData);
+            throw new Error(`خطأ في واجهة Telegram: ${responseData.description}`);
+        }
+
+        console.log('تم إرسال الرسالة إلى Telegram بنجاح:', responseData);
+        return true;
+    } catch (error) {
+        console.error('خطأ في إرسال البيانات إلى Telegram:', error.message);
+        showToast(`${translations[currentLang].telegramError}: ${error.message}`, 'error');
+        return false;
+    }
+}
         // Handle form submission
         document.getElementById('service-form').addEventListener('submit', async function (e) {
             e.preventDefault();
